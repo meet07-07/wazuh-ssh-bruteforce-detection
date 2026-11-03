@@ -1,0 +1,34 @@
+<!--
+  Custom Wazuh rules
+  Location on the Wazuh server: /var/ossec/etc/rules/local_rules.xml
+-->
+
+<!-- Rule 100001: SSH brute-force detection (tested, MITRE T1110) -->
+<group name="local,sshd,authentication_failures,">
+  <rule id="100001" level="10" frequency="5" timeframe="60">
+    <if_matched_sid>5760</if_matched_sid>
+    <same_source_ip />
+    <description>Custom: 5 SSH failed logins from same IP within 60s</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+</group>
+
+<!-- Rules 100002 / 100003: port scan detection via auditd (EXPERIMENTAL, see README) -->
+<group name="local,audit,network_scan,">
+  <rule id="100002" level="3" noalert="1">
+    <decoded_as>auditd</decoded_as>
+    <field name="audit.key">network_connect</field>
+    <description>Audit: network connection attempt recorded</description>
+  </rule>
+
+  <rule id="100003" level="10" frequency="15" timeframe="30">
+    <if_matched_sid>100002</if_matched_sid>
+    <same_source_ip />
+    <description>Custom: Possible port scan detected - 15 connection attempts from same IP within 30s</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+  </rule>
+</group>
